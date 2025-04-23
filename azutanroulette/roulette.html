@@ -1,0 +1,349 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>あずたんルーレット</title>
+  <style>
+    body {
+  transition: background 1s ease;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      background: linear-gradient(135deg, #0d0d2b, #1a1a3c);
+      color: white;
+      font-family: 'Meiryo', 'Noto Sans JP', sans-serif;
+      position: relative;
+      color: white;
+      font-family: sans-serif;
+      position: relative;
+    }
+    canvas {
+      border: 2px solid white;
+      border-radius: 50%;
+    }
+    #resultImage {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  max-width: 60%;
+  max-height: 60%;
+  border-radius: 20px;
+  box-shadow: 0 0 20px rgba(255, 255, 255, 0.5);
+  display: none;
+  z-index: 20;
+  opacity: 0;
+  transition: opacity 0.8s ease;
+}
+    
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+    #result {
+  font-weight: bold;
+  position: absolute;
+  top: calc(50% + 200px);
+  left: 50%;
+  transform: translate(-50%, 0);
+  font-size: 2rem;
+  font-family: 'Segoe UI', 'Meiryo', sans-serif;
+  color: #ffd700;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.6), 0 0 20px rgba(255, 215, 0, 0.9), 0 0 30px rgba(255, 215, 0, 0.6);
+  display: none;
+  z-index: 25;
+}
+    #title {
+  font-size: 2.5rem;
+  font-weight: bold;
+  margin-bottom: 20px;
+  color: #e0b0ff;
+  text-shadow: 0 0 8px rgba(255, 255, 255, 0.5);
+  font-family: 'Segoe UI', 'Meiryo', sans-serif;
+}
+
+    #startBtn {
+  margin-top: 20px;
+  font-size: 1.5rem;
+  padding: 10px 20px;
+  background: linear-gradient(to right, #6c4cc4, #8e62dc);
+  color: white;
+  font-weight: bold;
+  font-family: 'Segoe UI', 'Meiryo', sans-serif;
+  border: none;
+  border-radius: 10px;
+  cursor: pointer;
+  z-index: 5;
+  animation: buttonBounce 2s ease-in-out infinite;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+}
+    #pointer {
+      position: absolute;
+      top: calc(50% - 15px);
+      left: calc(50% + 220px);
+      transform: translate(-50%, -50%) rotate(0deg);
+      width: 0;
+      height: 0;
+      border-top: 15px solid transparent;
+      border-bottom: 15px solid transparent;
+      border-right: 30px solid red;
+      z-index: 10;
+    }
+      
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+      100% { transform: translate(-50%, -50%) scale(1) rotate(360deg); opacity: 1; }
+    }
+
+    
+      50% { transform: translate(-50%, -50%) scale(1.05); }
+    }
+      50% { transform: translate(-50%, -50%) scale(1.05) rotate(0deg); }
+    }
+      100% { transform: translate(-50%, -50%) scale(1) rotate(360deg); opacity: 1; }
+    }
+    #resultContainer {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      z-index: 15;
+    }
+
+    #resultEffect {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 300px;
+  height: 300px;
+  background: radial-gradient(circle at center, #ff66cc, #6600ff);
+  border-radius: 50%;
+  z-index: 15;
+  opacity: 0;
+  display: none;
+  animation: grow 0.6s ease-out forwards, spin 8s linear infinite;
+}
+
+    @keyframes grow {
+  0% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+  100% { transform: translate(-50%, -50%) scale(0.7); opacity: 1; }
+}
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+      100% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+
+    @keyframes spin {
+      0% { transform: translate(-50%, -50%) rotate(0deg); }
+      100% { transform: translate(-50%, -50%) rotate(360deg); }
+    }
+@keyframes bounce {
+  0%, 100% { transform: translate(-50%, -50%) scale(0.65); }
+  50% { transform: translate(-50%, -50%) scale(0.75); }
+}
+    @keyframes buttonBounce {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+
+    #startBtn {
+      animation: buttonBounce 2s ease-in-out infinite;
+    }
+    #neon-bg {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-image: radial-gradient(circle at 20% 30%, rgba(255, 255, 255, 0.05) 0%, transparent 60%),
+                        radial-gradient(circle at 70% 60%, rgba(255, 255, 255, 0.05) 0%, transparent 60%),
+                        radial-gradient(circle at 50% 80%, rgba(255, 255, 255, 0.05) 0%, transparent 60%);
+      z-index: 0;
+      pointer-events: none;
+    }
+</style>
+</head>
+<body>
+  <h1 id="title">今日のあずたんルーレット</h1>
+  <div id="pointer"></div>
+  <canvas id="wheel" width="400" height="400"></canvas>
+  
+  <div id="resultEffect" style="display: none;"></div>
+  <div id="resultContainer">
+  <img id="resultImage" src="" alt="Result Illustration">
+  <div id="result"></div>
+</div>
+  <div id="result"></div>
+  <button id="startBtn">スタート！</button>
+
+  <audio id="clickSound" src="click.mp3" preload="auto"></audio>
+  <audio id="tickSound" src="tick.mp3" preload="auto"></audio>
+  <audio id="resultSound" src="result.mp3" preload="auto"></audio>
+
+  <script>
+    const options = [
+      'あずたんの笑顔',
+      'あずたんの怒り',
+      'あずたんの気まぐれ',
+      'あずたんの秘密',
+      'あずたんの魅惑'
+    ];
+
+    const imageMap = {
+      'あずたんの笑顔': 'smile.png',
+      'あずたんの怒り': 'ikari.png',
+      'あずたんの気まぐれ': 'kimagure.png',
+      'あずたんの秘密': 'himitu.png',
+      'あずたんの魅惑': 'miwaku.png'
+    };
+
+    const canvas = document.getElementById('wheel');
+    const ctx = canvas.getContext('2d');
+    const result = document.getElementById('result');
+    const resultImage = document.getElementById('resultImage');
+    const startBtn = document.getElementById('startBtn');
+const resultEffect = document.getElementById('resultEffect');
+    const clickSound = document.getElementById('clickSound');
+    const tickSound = document.getElementById('tickSound');
+    const resultSound = document.getElementById('resultSound');
+
+    resultSound.volume = 0.8;
+
+    let angle = 0;
+    let spinning = false;
+    let lastTickTime = 0;
+
+    function drawWheel(rotation = 0) {
+      const numOptions = options.length;
+      const arcSize = 2 * Math.PI / numOptions;
+
+      ctx.clearRect(0, 0, 400, 400);
+      ctx.save();
+      ctx.translate(200, 200);
+      ctx.rotate(rotation * Math.PI / 180);
+
+      for (let i = 0; i < numOptions; i++) {
+        ctx.beginPath();
+        ctx.moveTo(0, 0);
+        const hue = 220 + (i * 20); // base hue for blues and purples
+        const palette = ['#3242b8', '#4767db', '#6b4ee6', '#5244d6', '#3f7eea'];
+        ctx.fillStyle = palette[i % palette.length];
+        ctx.arc(0, 0, 200, arcSize * i, arcSize * (i + 1));
+        ctx.fill();
+
+        ctx.save();
+        ctx.rotate(arcSize * i + arcSize / 2);
+        ctx.fillStyle = 'white';
+        ctx.font = '16px sans-serif';
+        ctx.textAlign = 'right';
+        ctx.fillText(options[i], 180, 10);
+        ctx.restore();
+      }
+
+      ctx.restore();
+    }
+
+    function spinWheel() {
+      if (spinning) return;
+      clickSound.currentTime = 0;
+      clickSound.play();
+
+      result.style.display = 'none';
+      resultImage.style.display = 'none';
+        document.getElementById('resultEffect').style.display = 'none';
+      spinning = true;
+      const rotation = Math.random() * 360 + 1800;
+      const duration = 4000;
+      let start = null;
+
+      function animate(timestamp) {
+        if (!start) start = timestamp;
+        const progress = timestamp - start;
+        const easeOut = 1 - Math.pow(1 - progress / duration, 3);
+        angle = (rotation * easeOut) % 360;
+        drawWheel(angle);
+
+        const currentTime = Date.now();
+        const speed = rotation * (1 - easeOut) / duration;
+        const interval = Math.max(30, 300 - speed * 3333);
+        if (currentTime - lastTickTime > interval) {
+          tickSound.currentTime = 0;
+          tickSound.play();
+          lastTickTime = currentTime;
+        }
+
+        if (progress < duration) {
+          requestAnimationFrame(animate);
+        } else {
+          spinning = false;
+          showResult(angle);
+        }
+      }
+
+      requestAnimationFrame(animate);
+    }
+
+    function showResult(finalAngle) {
+      const sliceDeg = 360 / options.length;
+      const offsetDeg = 0;
+      const correctedAngle = (360 - finalAngle + offsetDeg) % 360;
+      const index = Math.floor(correctedAngle / sliceDeg);
+      const selected = options[index];
+
+      document.body.style.background = 'linear-gradient(to bottom, #2244ff, #3c6fff, #66aaff)';
+      document.getElementById('wheel').style.display = 'none';
+      document.getElementById('startBtn').style.display = 'none';
+      document.getElementById('title').style.display = 'none';
+
+      setTimeout(() => {
+        result.textContent = `じゃーん！「${selected}」！`;
+        const resultEffect = document.getElementById('resultEffect');
+        const scale = 1.05;
+        const imageBox = resultImage.getBoundingClientRect();
+        resultEffect.style.width = `${imageBox.width * scale}px`;
+        resultEffect.style.height = `${imageBox.height * scale}px`;
+        resultEffect.style.display = 'block';
+        resultEffect.style.animation = 'grow 0.6s ease-out forwards, spin 8s linear infinite';
+        result.style.display = 'block';
+
+        resultSound.currentTime = 0;
+        resultSound.play();
+
+        resultImage.src = imageMap[selected];
+        resultImage.style.opacity = '0';
+        resultImage.style.display = 'block';
+        
+        setTimeout(() => {
+          resultImage.style.opacity = '1';
+        }, 10);
+
+        }, 200);
+    }
+
+    resultImage.addEventListener('click', () => {
+      if (!spinning && result.style.display === 'block') {
+        result.style.display = 'none';
+        resultImage.style.display = 'none';
+        resultEffect.style.display = 'none';
+        document.body.style.background = 'linear-gradient(135deg, #0d0d2b, #1a1a3c)';
+        document.getElementById('wheel').style.display = 'block';
+        document.getElementById('startBtn').style.display = 'block';
+        document.getElementById('title').style.display = 'block';
+      }
+    });
+
+    startBtn.addEventListener('click', spinWheel);
+
+    drawWheel();
+  </script>
+  <div id="neon-bg"></div>
+</body>
+</html>
